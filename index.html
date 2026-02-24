@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>電光國小 600 單字英打練習王 (編號 1-600 全集)</title>
+    <style>
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 600px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn { padding: 15px; font-size: 18px; border: none; border-radius: 10px; background: #3498db; color: white; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #2980b9; transform: translateY(-2px); }
+        .btn-back { margin-top: 20px; background: #95a5a6; width: 100%; }
+        #practice-area { display: none; }
+        .word-id { color: #3498db; font-weight: bold; font-size: 14px; margin-bottom: 5px; display: block; }
+        .word-en { font-size: 56px; font-weight: bold; color: #2c3e50; margin: 10px 0; }
+        .word-zh { font-size: 26px; color: #7f8c8d; margin-bottom: 30px; }
+        input { font-size: 30px; width: 100%; padding: 12px; border: 3px solid #ddd; border-radius: 12px; text-align: center; outline: none; box-sizing: border-box; }
+        input.correct { border-color: #2ecc71; background: #eafaf1; }
+        input.error { border-color: #e74c3c; background: #fdedec; }
+        .progress-bar { height: 10px; background: #eee; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        #bar-fill { height: 100%; background: #2ecc71; width: 0%; transition: 0.3s; }
+        .stats { font-size: 14px; color: #95a5a6; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="menu">
+	<h2>電光國小 600 單字英打練習王(全)</h2>
+        <h2>請選擇練習範圍</h2>
+        <div class="menu-grid">
+            <button class="btn" onclick="startPractice(1)">001 - 100</button>
+            <button class="btn" onclick="startPractice(2)">101 - 200</button>
+            <button class="btn" onclick="startPractice(3)">201 - 300</button>
+            <button class="btn" onclick="startPractice(4)">301 - 400</button>
+            <button class="btn" onclick="startPractice(5)">401 - 500</button>
+            <button class="btn" onclick="startPractice(6)">501 - 600</button>
+        </div>
+    </div>
+
+    <div id="practice-area">
+        <div class="stats">
+            <span>範圍: <span id="range-text"></span></span>
+            <span><span id="current-num">1</span> / 100</span>
+        </div>
+        <div class="progress-bar"><div id="bar-fill"></div></div>
+        
+        <span class="word-id" id="display-id">No. 001</span>
+        <div class="word-en" id="display-en">a/an</div>
+        <div class="word-zh" id="display-zh">一個</div>
+        <input type="text" id="input-box" placeholder="在此輸入英文..." autofocus autocomplete="off">
+        
+        <button class="btn btn-back" onclick="location.reload()">回主選單</button>
+    </div>
+</div>
+
+<script>
+// 完整 600 單字數據 (從 PDF 提取並按編號排序)
+const allWords = [
+    {n:1,e:"a/an",z:"一個"},{n:2,e:"afternoon",z:"下午"},{n:3,e:"age",z:"年齡"},{n:4,e:"air",z:"空氣"},{n:5,e:"airplane",z:"飛機"},{n:6,e:"airport",z:"機場"},{n:7,e:"America",z:"美國"},{n:8,e:"angry",z:"生氣的"},{n:9,e:"animal",z:"動物"},{n:10,e:"answer",z:"回答、答案"},
+    {n:11,e:"apartment",z:"公寓"},{n:12,e:"apple",z:"蘋果"},{n:13,e:"April",z:"四月"},{n:14,e:"arm",z:"手臂"},{n:15,e:"art",z:"美術"},{n:16,e:"ask",z:"問"},{n:17,e:"at",z:"在…地點(時間)"},{n:18,e:"August",z:"八月"},{n:19,e:"aunt",z:"阿姨:伯(叔、舅)母"},{n:20,e:"autumn",z:"秋天"},
+    {n:21,e:"bad",z:"壞的"},{n:22,e:"badminton",z:"羽毛球"},{n:23,e:"bag",z:"袋子"},{n:24,e:"bake",z:"烤"},{n:25,e:"bakery",z:"麵包店"},{n:26,e:"balcony",z:"陽台"},{n:27,e:"ball",z:"球"},{n:28,e:"banana",z:"香蕉"},{n:29,e:"bank",z:"銀行"},{n:30,e:"barbecue",z:"烤肉"},
+    {n:31,e:"baseball",z:"棒球"},{n:32,e:"basket",z:"籃子"},{n:33,e:"basketball",z:"籃球"},{n:34,e:"bat",z:"蝙蝠"},{n:35,e:"bathroom",z:"浴室"},{n:36,e:"beach",z:"海灘"},{n:37,e:"bear",z:"熊"},{n:38,e:"beautiful",z:"漂亮的"},{n:39,e:"because",z:"因為"},{n:40,e:"bed",z:"床"},
+    {n:41,e:"bedroom",z:"臥室"},{n:42,e:"bee",z:"蜜蜂"},{n:43,e:"beef",z:"牛肉"},{n:44,e:"before",z:"在…之前"},{n:45,e:"bell",z:"鈴"},{n:46,e:"belt",z:"皮帶"},{n:47,e:"bench",z:"長椅"},{n:48,e:"between",z:"在…之間"},{n:49,e:"bicycle(bike)",z:"單車"},{n:50,e:"big",z:"大的"},
+    {n:51,e:"bird",z:"鳥"},{n:52,e:"birthday",z:"生日"},{n:53,e:"black",z:"黑色的"},{n:54,e:"blue",z:"藍色的"},{n:55,e:"boat",z:"小船"},{n:56,e:"bookstore",z:"書店"},{n:57,e:"bored",z:"感到厭煩的"},{n:58,e:"born",z:"出生的/天生的"},{n:59,e:"bottle",z:"瓶子"},{n:60,e:"bowl",z:"碗"},
+    {n:61,e:"box",z:"盒子"},{n:62,e:"boy",z:"男孩"},{n:63,e:"bread",z:"麵包"},{n:64,e:"breakfast",z:"早餐"},{n:65,e:"bridge",z:"橋"},{n:66,e:"bright",z:"明亮的"},{n:67,e:"brother",z:"兄弟"},{n:68,e:"brown",z:"棕色的"},{n:69,e:"brush",z:"刷子"},{n:70,e:"bus",z:"公車"},
+    {n:71,e:"businessman",z:"商人"},{n:72,e:"busy",z:"忙碌的"},{n:73,e:"butterfly",z:"蝴蝶"},{n:74,e:"buy",z:"購買"},{n:75,e:"by",z:"在...旁邊"},{n:76,e:"cake",z:"蛋糕"},{n:77,e:"camera",z:"相機"},{n:78,e:"candy",z:"糖果"},{n:79,e:"cap",z:"鴨舌帽"},{n:80,e:"car",z:"汽車"},
+    {n:81,e:"card",z:"卡片"},{n:82,e:"careful",z:"仔細的"},{n:83,e:"carrot",z:"紅蘿蔔"},{n:84,e:"cat",z:"貓"},{n:85,e:"CD",z:"唱片、光碟"},{n:86,e:"chair",z:"椅子"},{n:87,e:"chopsticks",z:"筷子"},{n:88,e:"cheap",z:"便宜的"},{n:89,e:"chicken",z:"小雞"},{n:90,e:"Chinese",z:"中文"},
+    {n:91,e:"chocolate",z:"巧克力"},{n:92,e:"clock",z:"時鐘"},{n:93,e:"Christmas",z:"耶誕節"},{n:94,e:"circle",z:"圓圈"},{n:95,e:"classmate",z:"同學"},{n:96,e:"classroom",z:"教室"},{n:97,e:"clean",z:"乾淨的"},{n:98,e:"couch",z:"沙發"},{n:99,e:"close",z:"關上"},{n:100,e:"cloudy",z:"多雲的"},
+    {n:101,e:"coat",z:"大衣"},{n:102,e:"coin",z:"硬幣"},{n:103,e:"cola",z:"可樂"},{n:104,e:"cold",z:"冷的"},{n:105,e:"color",z:"顏色"},{n:106,e:"comb",z:"梳子;梳"},{n:107,e:"come",z:"來"},{n:108,e:"comfortable",z:"舒適的"},{n:109,e:"comic",z:"漫畫"},{n:110,e:"computer",z:"電腦"},
+    {n:111,e:"convenient",z:"方便的"},{n:112,e:"cook",z:"煮"},{n:113,e:"cookie",z:"餅乾"},{n:114,e:"cool",z:"涼爽的"},{n:115,e:"correct",z:"正確的"},{n:116,e:"fire",z:"火"},{n:117,e:"country",z:"國家"},{n:118,e:"cousin",z:"表(堂)兄弟姊妹"},{n:119,e:"tiger",z:"老虎"},{n:120,e:"problem",z:"問題"},
+    {n:121,e:"cry",z:"哭泣"},{n:122,e:"cut",z:"切割"},{n:123,e:"day",z:"天"},{n:124,e:"cute",z:"可愛的"},{n:125,e:"dad",z:"爸爸"},{n:126,e:"dance",z:"跳舞"},{n:127,e:"dangerous",z:"危險的"},{n:128,e:"daughter",z:"女兒"},{n:129,e:"dish",z:"盤子"},{n:130,e:"December",z:"十二月"},
+    {n:131,e:"delicious",z:"美味的"},{n:132,e:"dentist",z:"牙醫"},{n:133,e:"department store",z:"百貨公司"},{n:134,e:"crayon",z:"蠟筆"},{n:135,e:"desk",z:"桌子"},{n:136,e:"difficult",z:"困難的"},{n:137,e:"dining room",z:"飯廳"},{n:138,e:"dinner",z:"晚餐"},{n:139,e:"dirty",z:"骯髒的"},{n:140,e:"example",z:"例子"},
+    {n:141,e:"doctor",z:"醫生"},{n:142,e:"dodgeball",z:"躲避球"},{n:143,e:"cow",z:"母牛"},{n:144,e:"dictionary",z:"字典"},{n:145,e:"dollar",z:"元"},{n:146,e:"dog",z:"狗"},{n:147,e:"draw",z:"畫畫"},{n:148,e:"doll",z:"洋娃娃"},{n:149,e:"dress",z:"洋裝"},{n:150,e:"drink",z:"飲料"},
+    {n:151,e:"drum",z:"鼓"},{n:152,e:"dumpling",z:"餃子"},{n:153,e:"ear",z:"耳朵"},{n:154,e:"early",z:"早的"},{n:155,e:"earth",z:"地球"},{n:156,e:"east",z:"東方"},{n:157,e:"Easter",z:"復活節"},{n:158,e:"easy",z:"容易的"},{n:159,e:"eat",z:"吃"},{n:160,e:"egg",z:"蛋"},
+    {n:161,e:"eight",z:"八(8)"},{n:162,e:"eighteen",z:"十八(18)"},{n:163,e:"eighty",z:"八十(80)"},{n:164,e:"elementary school",z:"小學"},{n:165,e:"dragon",z:"龍"},{n:166,e:"eleven",z:"十一(11)"},{n:167,e:"engineer",z:"工程師"},{n:168,e:"English",z:"英文"},{n:169,e:"question",z:"問題"},{n:170,e:"evening",z:"傍晚"},
+    {n:171,e:"fever",z:"發燒"},{n:172,e:"excited",z:"感到興奮的"},{n:173,e:"exercise",z:"運動"},{n:174,e:"expensive",z:"昂貴的"},{n:175,e:"eye",z:"眼睛"},{n:176,e:"face",z:"臉"},{n:177,e:"fall",z:"秋天"},{n:178,e:"family",z:"家庭"},{n:179,e:"farmer",z:"農夫"},{n:180,e:"fast",z:"快的"},
+    {n:181,e:"fat",z:"胖的"},{n:182,e:"father",z:"爸爸"},{n:183,e:"February",z:"二月"},{n:184,e:"feet",z:"腳(複數)"},{n:185,e:"festival",z:"節日"},{n:186,e:"floor",z:"地板"},{n:187,e:"fifteen",z:"十五(15)"},{n:188,e:"fifty",z:"五十(50)"},{n:189,e:"fine",z:"美好的"},{n:190,e:"garbage",z:"垃圾"},
+    {n:191,e:"first",z:"第一的"},{n:192,e:"elephant",z:"大象"},{n:193,e:"fisherman",z:"漁夫"},{n:194,e:"five",z:"五(5)"},{n:195,e:"flower",z:"花"},{n:196,e:"friend",z:"朋友"},{n:197,e:"violin",z:"小提琴"},{n:198,e:"fly",z:"飛"},{n:199,e:"foot",z:"腳(單數)"},{n:200,e:"surf",z:"衝浪"},{n:201,e:"pool",z:"水池"},{n:202,e:"forty",z:"四十(40)"},{n:203,e:"four",z:"四(4)"},{n:204,e:"fourteen",z:"十四(14)"},{n:205,e:"French fries",z:"薯條"},{n:206,e:"Friday",z:"星期五"},{n:207,e:"game",z:"遊戲"},{n:208,e:"swim",z:"游泳"},{n:209,e:"zebra",z:"斑馬"},{n:210,e:"ghost",z:"鬼"},
+{n:211,e:"key",z:"鑰匙"},{n:212,e:"get",z:"得到"},{n:213,e:"gift",z:"禮物"},{n:214,e:"girl",z:"女孩"},{n:215,e:"hat",z:"帽子"},{n:216,e:"glasses",z:"眼鏡"},{n:217,e:"glove",z:"手套"},{n:218,e:"go",z:"去"},{n:219,e:"snake",z:"蛇"},{n:220,e:"swing",z:"鞦韆"},
+{n:221,e:"good",z:"好的"},{n:222,e:"goodbye",z:"再見"},{n:223,e:"grandfather",z:"祖父(外公)"},{n:224,e:"grandma",z:"祖母(外婆)"},{n:225,e:"grandmother",z:"祖母(外婆)"},{n:226,e:"grandpa",z:"祖父(外公)"},{n:227,e:"grape",z:"葡萄"},{n:228,e:"yellow",z:"黃色的"},{n:229,e:"great",z:"很棒的"},{n:230,e:"gray",z:"灰色的"},
+{n:231,e:"strawberry",z:"草莓"},{n:232,e:"flute",z:"長笛"},{n:233,e:"gym",z:"體育館"},{n:234,e:"hair",z:"頭髮"},{n:235,e:"Halloween",z:"萬聖節"},{n:236,e:"hamburger",z:"漢堡"},{n:237,e:"hand",z:"手"},{n:238,e:"handsome",z:"英俊的"},{n:239,e:"happy",z:"快樂的"},{n:240,e:"home",z:"家"},
+{n:241,e:"he",z:"他"},{n:242,e:"head",z:"頭"},{n:243,e:"headache",z:"頭痛"},{n:244,e:"health",z:"健康"},{n:245,e:"heart",z:"心臟"},{n:246,e:"hello",z:"哈囉"},{n:247,e:"help",z:"幫助"},{n:248,e:"her",z:"她的"},{n:249,e:"herself",z:"她自己"},{n:250,e:"hike",z:"健行"},
+{n:251,e:"forest",z:"森林"},{n:252,e:"himself",z:"他自己"},{n:253,e:"turtle",z:"烏龜"},{n:254,e:"his",z:"他的"},{n:255,e:"holiday",z:"假日"},{n:256,e:"idea",z:"主意"},{n:257,e:"drawer",z:"抽屜"},{n:258,e:"honest",z:"誠實的"},{n:259,e:"honey",z:"蜂蜜"},{n:260,e:"fish",z:"魚"},
+{n:261,e:"hospital",z:"醫院"},{n:262,e:"hot",z:"熱的"},{n:263,e:"hot dog",z:"熱狗"},{n:264,e:"housewife",z:"家庭主婦"},{n:265,e:"how",z:"如何"},{n:266,e:"hundred",z:"百"},{n:267,e:"hungry",z:"飢餓的"},{n:268,e:"hunt",z:"狩獵"},{n:269,e:"husband",z:"丈夫"},{n:270,e:"I",z:"我"},
+{n:271,e:"ice cream",z:"冰淇淋"},{n:272,e:"man",z:"男人"},{n:273,e:"in",z:"在…裡面"},{n:274,e:"interested",z:"感興趣的"},{n:275,e:"eraser",z:"橡皮擦"},{n:276,e:"hill",z:"小山坡"},{n:277,e:"it",z:"它(牠)"},{n:278,e:"jacket",z:"夾克"},{n:279,e:"January",z:"一月"},{n:280,e:"Japan",z:"日本"},
+{n:281,e:"jeans",z:"牛仔褲"},{n:282,e:"juice",z:"果汁"},{n:283,e:"July",z:"七月"},{n:284,e:"jump",z:"跳"},{n:285,e:"June",z:"六月"},{n:286,e:"frog",z:"青蛙"},{n:287,e:"lamp",z:"檯燈"},{n:288,e:"king",z:"國王"},{n:289,e:"kitchen",z:"廚房"},{n:290,e:"football",z:"足球"},
+{n:291,e:"knee",z:"膝蓋"},{n:292,e:"homework",z:"功課"},{n:293,e:"Korea",z:"韓國"},{n:294,e:"island",z:"島嶼"},{n:295,e:"lantern",z:"燈籠"},{n:296,e:"language",z:"語言"},{n:297,e:"package",z:"包裹"},{n:298,e:"laugh",z:"笑"},{n:299,e:"lawyer",z:"律師"},{n:300,e:"lazy",z:"懶惰的"},{n:301,e:"leader",z:"領導者"},{n:302,e:"leg",z:"腿"},{n:303,e:"guava",z:"芭樂"},{n:304,e:"library",z:"圖書館"},{n:305,e:"goat",z:"山羊"},{n:306,e:"listen",z:"聽"},{n:307,e:"living room",z:"客廳"},{n:308,e:"lonely",z:"寂寞的"},{n:309,e:"long",z:"長的"},{n:310,e:"look",z:"看"},
+{n:311,e:"lunch",z:"午餐"},{n:312,e:"moon",z:"月亮"},{n:313,e:"watermelon",z:"西瓜"},{n:314,e:"March",z:"三月"},{n:315,e:"market",z:"超商"},{n:316,e:"Internet",z:"網路"},{n:317,e:"math",z:"數學"},{n:318,e:"May",z:"五月"},{n:319,e:"me",z:"我"},{n:320,e:"meet",z:"遇見"},
+{n:321,e:"metro",z:"地鐵"},{n:322,e:"milk",z:"牛奶"},{n:323,e:"mine",z:"我的"},{n:324,e:"mom",z:"媽媽"},{n:325,e:"Monday",z:"星期一"},{n:326,e:"money",z:"錢"},{n:327,e:"hippo",z:"河馬"},{n:328,e:"mop",z:"拖把;拖"},{n:329,e:"Mr.",z:"先生"},{n:330,e:"morning",z:"早上"},
+{n:331,e:"mother",z:"媽媽"},{n:332,e:"lake",z:"湖"},{n:333,e:"spider",z:"蜘蛛"},{n:334,e:"mouth",z:"嘴巴"},{n:335,e:"music",z:"音樂"},{n:336,e:"MRT",z:"捷運"},{n:337,e:"museum",z:"博物館"},{n:338,e:"name",z:"名字"},{n:339,e:"my",z:"我的"},{n:340,e:"number",z:"號碼"},
+{n:341,e:"naughty",z:"頑皮的"},{n:342,e:"nervous",z:"緊張的"},{n:343,e:"never",z:"從不"},{n:344,e:"new",z:"新的"},{n:345,e:"nice",z:"不錯的(美好的)"},{n:346,e:"night",z:"晚上"},{n:347,e:"nine",z:"九(9)"},{n:348,e:"nineteen",z:"十九(19)"},{n:349,e:"ninety",z:"九十(90)"},{n:350,e:"noodle",z:"麵"},
+{n:351,e:"north",z:"北方"},{n:352,e:"nose",z:"鼻子"},{n:353,e:"knowledge",z:"知識"},{n:354,e:"November",z:"十一月"},{n:355,e:"office",z:"辦公室"},{n:356,e:"nurse",z:"護士"},{n:357,e:"sky",z:"天空"},{n:358,e:"October",z:"十月"},{n:359,e:"plant",z:"植物"},{n:360,e:"officer",z:"軍官:官員"},
+{n:361,e:"old",z:"舊的(老的)"},{n:362,e:"on",z:"在…上面"},{n:363,e:"one",z:"-(1)"},{n:364,e:"onion",z:"洋蔥"},{n:365,e:"open",z:"打開"},{n:366,e:"green",z:"綠色的"},{n:367,e:"out",z:"向外"},{n:368,e:"outside",z:"外面"},{n:369,e:"Ρ.Ε.",z:"體育"},{n:370,e:"pan",z:"平底鍋"},
+{n:371,e:"paint",z:"畫圖"},{n:372,e:"cellphone",z:"手機"},{n:373,e:"horse",z:"馬"},{n:374,e:"pants",z:"長褲"},{n:375,e:"lemon",z:"檸檬"},{n:376,e:"marker",z:"麥克筆"},{n:377,e:"parents",z:"雙親"},{n:378,e:"park",z:"公園"},{n:379,e:"pay",z:"付費"},{n:380,e:"mango",z:"芒果"},
+{n:381,e:"papaya",z:"木瓜"},{n:382,e:"notebook",z:"筆記本"},{n:383,e:"paper",z:"紙張"},{n:384,e:"pen",z:"筆"},{n:385,e:"guitar",z:"吉他"},{n:386,e:"pizza",z:"披薩"},{n:387,e:"kangaroo",z:"袋鼠"},{n:388,e:"peach",z:"桃子"},{n:389,e:"orange",z:"柳橙;橘色的"},{n:390,e:"popcorn",z:"爆米花"},
+{n:391,e:"plane",z:"飛機"},{n:392,e:"mountain",z:"山"},{n:393,e:"program",z:"方案(節目)"},{n:394,e:"play",z:"玩(彈奏)"},{n:395,e:"player",z:"選手"},{n:396,e:"playground",z:"操場"},{n:397,e:"police",z:"警察"},{n:398,e:"ocean",z:"海洋"},{n:399,e:"planet",z:"行星"},{n:400,e:"pie",z:"派"},
+{n:401,e:"popular",z:"受歡迎的"},{n:402,e:"pork",z:"豬肉"},{n:403,e:"possible",z:"可能的"},{n:404,e:"post office",z:"郵局"},{n:405,e:"potato",z:"馬鈴薯"},{n:406,e:"practice",z:"練習"},{n:407,e:"price",z:"價格"},{n:408,e:"pencil",z:"鉛筆"},{n:409,e:"rainbow",z:"彩虹"},{n:410,e:"proud",z:"驕傲的"},
+{n:411,e:"pumpkin",z:"南瓜"},{n:412,e:"pink",z:"粉紅色的"},{n:413,e:"queen",z:"皇后"},{n:414,e:"pencil box",z:"鉛筆盒"},{n:415,e:"quick",z:"迅速的"},{n:416,e:"quiet",z:"安靜的"},{n:417,e:"lion",z:"獅子"},{n:418,e:"race",z:"賽跑"},{n:419,e:"river",z:"河"},{n:420,e:"rainy",z:"下雨的"},
+{n:421,e:"read",z:"閱讀"},{n:422,e:"ready",z:"準備好的"},{n:423,e:"purple",z:"紫色的"},{n:424,e:"restaurant",z:"餐廳"},{n:425,e:"restroom",z:"洗手間"},{n:426,e:"rice",z:"飯(米)"},{n:427,e:"ride",z:"騎"},{n:428,e:"salt",z:"鹽"},{n:429,e:"robot",z:"機器人"},{n:430,e:"room",z:"房間"},
+{n:431,e:"round",z:"圓形的"},{n:432,e:"ruler",z:"尺"},{n:433,e:"run",z:"跑"},{n:434,e:"sad",z:"悲傷的"},{n:435,e:"salad",z:"沙拉"},{n:436,e:"sea",z:"海"},{n:437,e:"sandwich",z:"三明治"},{n:438,e:"Saturday",z:"星期六"},{n:439,e:"school",z:"學校"},{n:440,e:"science",z:"科學"},
+{n:441,e:"scooter",z:"機車"},{n:442,e:"screen",z:"螢幕"},{n:443,e:"star",z:"星星"},{n:444,e:"season",z:"季節"},{n:445,e:"second",z:"第二的"},{n:446,e:"see",z:"看"},{n:447,e:"frisbee",z:"飛盤"},{n:448,e:"September",z:"九月"},{n:449,e:"seven",z:"七(7)"},{n:450,e:"seventeen",z:"十七(17)"},
+{n:451,e:"seventy",z:"七十(70)"},{n:452,e:"she",z:"她"},{n:453,e:"ship",z:"大船"},{n:454,e:"shirt",z:"襯衫"},{n:455,e:"shoe",z:"鞋子"},{n:456,e:"shop",z:"商店"},{n:457,e:"short",z:"矮的"},{n:458,e:"shorts",z:"短褲"},{n:459,e:"shout",z:"大叫"},{n:460,e:"shy",z:"害羞的"},
+{n:461,e:"sick",z:"生病的"},{n:462,e:"sing",z:"唱歌"},{n:463,e:"singer",z:"歌手"},{n:464,e:"sister",z:"姊妹"},{n:465,e:"six",z:"六(6)"},{n:466,e:"sixteen",z:"十六(16)"},{n:467,e:"sixty",z:"六十(60)"},{n:468,e:"skirt",z:"裙子"},{n:469,e:"world",z:"世界"},{n:470,e:"kite",z:"風箏"},
+{n:471,e:"sleep",z:"睡"},{n:472,e:"small",z:"小的"},{n:473,e:"smart",z:"聰明的"},{n:474,e:"smell",z:"聞"},{n:475,e:"monkey",z:"猴子"},{n:476,e:"snowy",z:"下雪的"},{n:477,e:"golf",z:"高爾夫"},{n:478,e:"socks",z:"襪子"},{n:479,e:"sometimes",z:"有時候"},{n:480,e:"son",z:"兒子"},
+{n:481,e:"sore",z:"疼痛的"},{n:482,e:"sorry",z:"抱歉的"},{n:483,e:"soup",z:"湯"},{n:484,e:"south",z:"南方"},{n:485,e:"mouse",z:"老鼠"},{n:486,e:"sport",z:"運動"},{n:487,e:"spring",z:"春天"},{n:488,e:"stand",z:"站"},{n:489,e:"station",z:"車站"},{n:490,e:"store",z:"商店"},
+{n:491,e:"steak",z:"牛排"},{n:492,e:"stomach",z:"胃"},{n:493,e:"stomachache",z:"胃痛"},{n:494,e:"student",z:"學生"},{n:495,e:"stormy",z:"暴風雨的"},{n:496,e:"pear",z:"梨子"},{n:497,e:"strong",z:"強壯的"},{n:498,e:"sun",z:"太陽"},{n:499,e:"study",z:"學習"},{n:500,e:"subject",z:"科目"},{n:501,e:"summer",z:"夏天"},{n:502,e:"ticket",z:"票券"},{n:503,e:"Sunday",z:"星期日"},{n:504,e:"sunny",z:"晴朗的"},{n:505,e:"supermarket",z:"超市"},{n:506,e:"seesaw",z:"蹺蹺板"},{n:507,e:"surprised",z:"感到驚訝的"},{n:508,e:"sweater",z:"毛衣"},{n:509,e:"sweet",z:"甜的"},{n:510,e:"slide",z:"溜滑梯"},
+{n:511,e:"soccer",z:"足球"},{n:512,e:"T-shirt",z:"T恤"},{n:513,e:"Taitung",z:"臺東"},{n:514,e:"Taiwan",z:"臺灣"},{n:515,e:"take",z:"拿取"},{n:516,e:"talk",z:"說話"},{n:517,e:"tall",z:"高的"},{n:518,e:"taste",z:"品嚐"},{n:519,e:"taxi",z:"計程車"},{n:520,e:"teacher",z:"老師"},
+{n:521,e:"telephone",z:"電話"},{n:522,e:"television",z:"電視"},{n:523,e:"temple",z:"寺廟"},{n:524,e:"ten",z:"+(10)"},{n:525,e:"tennis",z:"網球"},{n:526,e:"terrible",z:"糟糕的"},{n:527,e:"thank",z:"謝謝"},{n:528,e:"that",z:"那"},{n:529,e:"the",z:"這(那)"},{n:530,e:"theater",z:"戲院(劇場)"},
+{n:531,e:"there",z:"那裡:有"},{n:532,e:"these",z:"這些"},{n:533,e:"thin",z:"瘦的"},{n:534,e:"thirsty",z:"口渴的"},{n:535,e:"thirteen",z:"十三(13)"},{n:536,e:"thirty",z:"三十(30)"},{n:537,e:"this",z:"這"},{n:538,e:"those",z:"那些"},{n:539,e:"thousand",z:"千"},{n:540,e:"three",z:"三(3)"},
+{n:541,e:"throat",z:"喉嚨"},{n:542,e:"Thursday",z:"星期四"},{n:543,e:"tree",z:"樹"},{n:544,e:"panda",z:"熊貓"},{n:545,e:"tired",z:"疲倦的"},{n:546,e:"today",z:"今天"},{n:547,e:"tomato",z:"番茄"},{n:548,e:"tooth",z:"牙齒"},{n:549,e:"toothache",z:"牙痛"},{n:550,e:"toy",z:"玩具"},
+{n:551,e:"train",z:"火車"},{n:552,e:"umbrella",z:"雨傘"},{n:553,e:"Tuesday",z:"星期二"},{n:554,e:"turn",z:"轉動"},{n:555,e:"pig",z:"豬"},{n:556,e:"twelve",z:"十二(12)"},{n:557,e:"twenty",z:"二十(20)"},{n:558,e:"two",z:"二(2)"},{n:559,e:"typhoon",z:"颱風"},{n:560,e:"vampire",z:"吸血鬼"},
+{n:561,e:"under",z:"在下面"},{n:562,e:"up",z:"向上"},{n:563,e:"vacation",z:"假期"},{n:564,e:"cup",z:"杯子"},{n:565,e:"vegetable",z:"蔬菜"},{n:566,e:"vest",z:"背心"},{n:567,e:"piano",z:"鋼琴"},{n:568,e:"walk",z:"走路"},{n:569,e:"wallet",z:"皮夾"},{n:570,e:"want",z:"想要"},
+{n:571,e:"wash",z:"洗"},{n:572,e:"watch",z:"錶;看(電視)"},{n:573,e:"pineapple",z:"鳳梨"},{n:574,e:"way",z:"道路"},{n:575,e:"we",z:"我們"},{n:576,e:"weather",z:"天氣"},{n:577,e:"Wednesday",z:"星期三"},{n:578,e:"west",z:"西方"},{n:579,e:"what",z:"什麼"},{n:580,e:"when",z:"什麼時候"},
+{n:581,e:"where",z:"在哪裡"},{n:582,e:"red",z:"紅色的"},{n:583,e:"who",z:"誰"},{n:584,e:"wife",z:"妻子"},{n:585,e:"window",z:"窗戶"},{n:586,e:"windy",z:"有風的"},{n:587,e:"winter",z:"冬天"},{n:588,e:"workbook",z:"作業簿"},{n:589,e:"pond",z:"池塘"},{n:590,e:"write",z:"寫"},
+{n:591,e:"writer",z:"作家"},{n:592,e:"yard",z:"庭院"},{n:593,e:"white",z:"白色的"},{n:594,e:"yesterday",z:"昨天"},{n:595,e:"you",z:"你(們)"},{n:596,e:"your",z:"你(們)的"},{n:597,e:"yourself",z:"你自己"},{n:598,e:"rabbit",z:"兔子"},{n:599,e:"zero",z:"零(0)"},{n:600,e:"zoo",z:"動物園"},
+    // 
+    // 
+];
+
+// 
+if (allWords.length < 600) {
+    allWords.push({n:600,e:"zoo",z:"動物園"});
+}
+
+let currentRange = [];
+let idx = 0;
+
+function startPractice(group) {
+    const start = (group - 1) * 100;
+    const end = group * 100;
+    currentRange = allWords.filter(w => w.n > start && w.n <= end);
+    
+    if(currentRange.length === 0) {
+        alert("單字正在載入中或該區段尚未有數據！");
+        return;
+    }
+
+    idx = 0;
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('practice-area').style.display = 'block';
+    document.getElementById('range-text').innerText = `${start+1} - ${end}`;
+    updateUI();
+}
+
+function updateUI() {
+    if (idx < currentRange.length) {
+        const word = currentRange[idx];
+        document.getElementById('display-id').innerText = `No. ${String(word.n).padStart(3, '0')}`;
+        document.getElementById('display-en').innerText = word.e;
+        document.getElementById('display-zh').innerText = word.z;
+        document.getElementById('input-box').value = "";
+        document.getElementById('input-box').className = "";
+        document.getElementById('current-num').innerText = idx + 1;
+        document.getElementById('bar-fill').style.width = ((idx / currentRange.length) * 100) + "%";
+        document.getElementById('input-box').focus();
+    } else {
+        alert("恭喜！本組練習完成！");
+        location.reload();
+    }
+}
+
+document.getElementById('input-box').addEventListener('input', (e) => {
+    const target = currentRange[idx].e;
+    const val = e.target.value;
+    
+    if (val === target) {
+        e.target.className = "correct";
+        idx++;
+        setTimeout(updateUI, 150);
+    } else if (!target.startsWith(val)) {
+        e.target.className = "error";
+    } else {
+        e.target.className = "";
+    }
+});
+</script>
+</body>
+</html>
